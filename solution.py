@@ -44,13 +44,17 @@ def naked_twins(values):
                     second_num = values[key][1]
                     for peer in peers[key]:
                         if peer != twin:
-                            # Question- Not sure how to use assign_values with .replace()
-                            values[peer] = values[peer].replace(first_num,'')
-                            values[peer] = values[peer].replace(second_num,'')
+                            # Question- Not sure how to use assign_value with .replace()
+                            assign_value(values,peer,values[peer].replace(first_num,''))
+                            assign_value(values,peer,values[peer].replace(second_num,''))
+                            # values[peer] = values[peer].replace(first_num,'')
+                            # values[peer] = values[peer].replace(second_num,'')
                     for peer in peers[twin]:
                         if peer != key:
-                            values[peer] = values[peer].replace(first_num,'')
-                            values[peer] = values[peer].replace(second_num,'')
+                            assign_value(values,peer,values[peer].replace(first_num,''))
+                            assign_value(values,peer,values[peer].replace(second_num,''))
+                            # values[peer] = values[peer].replace(first_num,'')
+                            # values[peer] = values[peer].replace(second_num,'')
     return values
 
 
@@ -118,7 +122,8 @@ def eliminate(values):
     for key in values.keys():
         if len(values[key]) == 1:
             for peer in peers[key]:
-                values[peer] = values[peer].replace(values[key],'')
+                assign_value(values,peer,values[peer].replace(values[key],''))
+                # values[peer] = values[peer].replace(values[key],'')
     return values
 
 def only_choice(values):
@@ -126,7 +131,7 @@ def only_choice(values):
         for digit in '123456789':
             dplaces = [box for box in unit if digit in values[box]]
             if len(dplaces) == 1:
-                # Question- Is this correct use of assign_values here?
+                # Question- Is this correct use of assign_value here?
                 assign_value(values,dplaces[0],digit)
                 # values[dplaces[0]] = digit
     return values
