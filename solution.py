@@ -1,3 +1,11 @@
+# All Questions appear in comments appended with 'Question -'
+
+
+#  Question - visualization doesn't seem to work at all, I dont even get a popup window. is that an install issue or a code error?
+#  Question - python solution.py gives me the error seen in forum post #222074- this seems to indicate it is NOT problematic since I built
+#       my code to solve ANY puzzle (or tried to at least), but I'm still not passing any of the tests...??
+    # https://discussions.udacity.com/t/is-the-goal-of-the-project-to-solve-any-sudokus-or-only-diagonal-sudokus/241399
+
 assignments = []
 
 def assign_value(values, box, value):
@@ -26,10 +34,51 @@ def naked_twins(values):
 
     # Find all instances of naked twins
     # Eliminate the naked twins as possibilities for their peers
+    for key in values.keys():
+        if len(values[key]) == 2:
+            for twin in peers[key]:
+                if values[key] == values[twin]:
+                    # Means we have found a naked pair
+                    # Now remove those numbers from all other peers of (key) and (peer)
+                    first_num = values[key][0]
+                    second_num = values[key][1]
+                    for peer in peers[key]:
+                        if peer != twin:
+                            # Question- Not sure how to use assign_values with .replace()
+                            values[peer] = values[peer].replace(first_num,'')
+                            values[peer] = values[peer].replace(second_num,'')
+                    for peer in peers[twin]:
+                        if peer != key:
+                            values[peer] = values[peer].replace(first_num,'')
+                            values[peer] = values[peer].replace(second_num,'')
+    return values
+
+
+
+rows = 'ABCDEFGHI'
+cols = '123456789'
 
 def cross(A, B):
     "Cross product of elements in A and elements in B."
-    pass
+    return [a+b for a in A for b in B]
+
+boxes = cross(rows, cols)
+
+diagonals_1 = []
+for i in range(0,9):
+    diagonals_1.append(rows[i] + cols[i])
+diagonals_2 = []
+for i in range(0,9):
+    diagonals_2.append(rows[8-i] + cols[i])
+diagonals =[diagonals_1,diagonals_2]
+
+row_units = [cross(r, cols) for r in rows]
+column_units = [cross(rows, c) for c in cols]
+square_units = [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')]
+
+unitlist = row_units + column_units + square_units + diagonals
+units = dict((s, [u for u in unitlist if s in u]) for s in boxes)
+peers = dict((s, set(sum(units[s],[]))-set([s])) for s in boxes)
 
 def grid_values(grid):
     """
@@ -41,7 +90,15 @@ def grid_values(grid):
             Keys: The boxes, e.g., 'A1'
             Values: The value in each box, e.g., '8'. If the box has no value, then the value will be '123456789'.
     """
-    pass
+    grid_array = []
+
+    for value in grid:
+        if value == '.':
+            grid_array.append('123456789')
+        else:
+            grid_array.append(value)
+
+    return dict(zip(boxes, grid_array))
 
 def display(values):
     """
@@ -49,19 +106,67 @@ def display(values):
     Args:
         values(dict): The sudoku in dictionary form
     """
-    pass
+    width = 1+max(len(values[s]) for s in boxes)
+    line = '+'.join(['-'*(width*3)]*3)
+    for r in rows:
+        print(''.join(values[r+c].center(width)+('|' if c in '36' else '')
+                      for c in cols))
+        if r in 'CF': print(line)
+    return
 
 def eliminate(values):
-    pass
+    for key in values.keys():
+        if len(values[key]) == 1:
+            for peer in peers[key]:
+                values[peer] = values[peer].replace(values[key],'')
+    return values
 
 def only_choice(values):
-    pass
+    for unit in unitlist:
+        for digit in '123456789':
+            dplaces = [box for box in unit if digit in values[box]]
+            if len(dplaces) == 1:
+                # Question- Is this correct use of assign_values here?
+                assign_value(values,dplaces[0],digit)
+                # values[dplaces[0]] = digit
+    return values
+
 
 def reduce_puzzle(values):
-    pass
+    stalled = False
+    while not stalled:
+        # Check how many boxes have a determined value
+        solved_values_before = len([box for box in values.keys() if len(values[box]) == 1])
+        # Use the Eliminate Strategy
+        values = eliminate(values)
+        # Use the Only Choice Strategy
+        values = only_choice(values)
+        # Use the Naked Twins Strategy
+        values = naked_twins(values)
+        # Check how many boxes have a determined value, to compare
+        solved_values_after = len([box for box in values.keys() if len(values[box]) == 1])
+        # If no new values were added, stop the loop.
+        stalled = solved_values_before == solved_values_after
+        # Sanity check, return False if there is a box with zero available values:
+        if len([box for box in values.keys() if len(values[box]) == 0]):
+            return False
+    return values
 
 def search(values):
-    pass
+    values = reduce_puzzle(values)
+    if values is False:
+        return False ## Failed earlier
+    if all(len(values[s]) == 1 for s in boxes): 
+        return values ## Solved!
+    # Choose one of the unfilled squares with the fewest possibilities
+    n,s = min((len(values[s]), s) for s in boxes if len(values[s]) > 1)
+    # Now use recurrence to solve each one of the resulting sudokus, and 
+    for value in values[s]:
+        new_sudoku = values.copy()
+        new_sudoku[s] = value
+        attempt = search(new_sudoku)
+        if attempt:
+            return attempt
 
 def solve(grid):
     """
@@ -72,6 +177,8 @@ def solve(grid):
     Returns:
         The dictionary representation of the final sudoku grid. False if no solution exists.
     """
+    return search(grid_values(grid))
+
 
 if __name__ == '__main__':
     diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
