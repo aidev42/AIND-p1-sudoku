@@ -34,30 +34,88 @@ def naked_twins(values):
 
     # Find all instances of naked twins
     # Eliminate the naked twins as possibilities for their peers
+    naked_pairs = []
+    naked_pair_values = []
     for key in values.keys():
         if len(values[key]) == 2:
+            # Check for naked pair
             for twin in peers[key]:
                 if values[key] == values[twin]:
+                    # print('found a naked pair:')
+                    # print(values[key])
+                    # print(values[twin])
+                    # print(key)
+                    # print(twin)
                     # Means we have found a naked pair
                     # Now remove those numbers from all other peers of (key) and (peer)
-                    first_num = values[key][0]
-                    second_num = values[key][1]
-                    for peer in peers[key]:
-                        if peer != twin:
-                            # Question- Not sure how to use assign_value with .replace()
-                            assign_value(values,peer,values[peer].replace(first_num,''))
-                            assign_value(values,peer,values[peer].replace(second_num,''))
-                            # values[peer] = values[peer].replace(first_num,'')
-                            # values[peer] = values[peer].replace(second_num,'')
-                    for peer in peers[twin]:
-                        if peer != key:
-                            assign_value(values,peer,values[peer].replace(first_num,''))
-                            assign_value(values,peer,values[peer].replace(second_num,''))
-                            # values[peer] = values[peer].replace(first_num,'')
-                            # values[peer] = values[peer].replace(second_num,'')
+                    if [key, twin] in naked_pairs or [twin, key] in naked_pairs:
+                        print('duplicate')
+                    else: 
+                        first_num = values[key][0]
+                        second_num = values[key][1]
+                        naked_pairs.append([key, twin])
+                        naked_pair_values.append([first_num, second_num])
+                    # print(naked_pairs)
+                    # print(naked_pair_values)
+                    # print(len(naked_pairs))
+    # print(naked_pairs)
+    # print(naked_pair_values)
+
+    # Now go through COLLECTIVE peers of BOTH twins
+    # Extremely suboptimal but trying to get concept down first
+
+    # def intersect(a, b):
+    #     """ return the intersection of two lists """
+    #     return list(set(a) & set(b))
+
+
+    for i in range(0, len(naked_pairs)):
+        for peer in peers[naked_pairs[i][0]]:
+            if peer in peers[naked_pairs[i][1]] and peer != naked_pairs[i][1]:
+                assign_value(values, peer, values[peer].replace(naked_pair_values[i][0], ''))
+                # print(values[peer])
+                assign_value(values, peer, values[peer].replace(naked_pair_values[i][1], ''))
+        for peer in peers[naked_pairs[i][1]]:
+            if peer in peers[naked_pairs[i][0]] and peer != naked_pairs[i][0]:
+                assign_value(values, peer, values[peer].replace(naked_pair_values[i][0], ''))
+                assign_value(values, peer, values[peer].replace(naked_pair_values[i][1], ''))
+
+    # for i in range(0, len(naked_pairs)):
+    #     for peer in peers[naked_pairs[i][0]]:
+    #         if peer != naked_pairs[i][1]:
+    #             # check(peer, values, 'naked')
+    #             # print(peer)
+    #             # print(values[peer])
+    #             assign_value(values, peer, values[peer].replace(naked_pair_values[i][0], ''))
+    #             # print(values[peer])
+    #             assign_value(values, peer, values[peer].replace(naked_pair_values[i][1], ''))
+    #             # print(values[peer])
+    #     for peer in peers[naked_pairs[i][1]]:
+    #         if peer != naked_pairs[i][0]:
+    #             # check(peer, values, 'naked')
+    #             assign_value(values, peer, values[peer].replace(naked_pair_values[i][0], ''))
+    #             assign_value(values, peer, values[peer].replace(naked_pair_values[i][1], ''))
+
+    # for peer in peers[key]:
+    #     if peer != twin:
+    #         # Question- Not sure how to use assign_value with .replace()
+    #         assign_value(values,peer,values[peer].replace(first_num,''))
+    #         assign_value(values,peer,values[peer].replace(second_num,''))
+    #         # values[peer] = values[peer].replace(first_num,'')
+    #         # values[peer] = values[peer].replace(second_num,'')
+    # for peer in peers[twin]:
+    #     if peer != key:
+    #         assign_value(values,peer,values[peer].replace(first_num,''))
+    #         assign_value(values,peer,values[peer].replace(second_num,''))
+    #         # values[peer] = values[peer].replace(first_num,'')
+    #         # values[peer] = values[peer].replace(second_num,'')
     return values
 
-
+def check(peer, values, text):
+    if peer == 'E6':
+        print('about to change E6')
+        print(values[peer])
+        print(text)
 
 rows = 'ABCDEFGHI'
 cols = '123456789'
@@ -122,7 +180,9 @@ def eliminate(values):
     for key in values.keys():
         if len(values[key]) == 1:
             for peer in peers[key]:
-                assign_value(values,peer,values[peer].replace(values[key],''))
+                # check(peer, values, 'eliminate')
+                new_value = values[peer].replace(values[key],'')
+                assign_value(values, peer, new_value)
                 # values[peer] = values[peer].replace(values[key],'')
     return values
 
@@ -132,29 +192,40 @@ def only_choice(values):
             dplaces = [box for box in unit if digit in values[box]]
             if len(dplaces) == 1:
                 # Question- Is this correct use of assign_value here?
-                assign_value(values,dplaces[0],digit)
+                # check(dplaces[0], values, 'only choice')
+                assign_value(values, dplaces[0], digit)
                 # values[dplaces[0]] = digit
     return values
 
 
 def reduce_puzzle(values):
     stalled = False
-    while not stalled:
+    test = 0
+    # while not stalled:
+    while test < 1:
         # Check how many boxes have a determined value
         solved_values_before = len([box for box in values.keys() if len(values[box]) == 1])
         # Use the Eliminate Strategy
         values = eliminate(values)
+        display(values)
+        print('after eliminate')
         # Use the Only Choice Strategy
         values = only_choice(values)
+        display(values)
+        print('after only-choice')
         # Use the Naked Twins Strategy
-        values = naked_twins(values)
+        # values = naked_twins(values)
+        display(values)
+        print('after naked_twins')
         # Check how many boxes have a determined value, to compare
         solved_values_after = len([box for box in values.keys() if len(values[box]) == 1])
         # If no new values were added, stop the loop.
         stalled = solved_values_before == solved_values_after
         # Sanity check, return False if there is a box with zero available values:
         if len([box for box in values.keys() if len(values[box]) == 0]):
+            print('about to return false')
             return False
+        test += 1
     return values
 
 def search(values):
@@ -186,7 +257,8 @@ def solve(grid):
 
 
 if __name__ == '__main__':
-    diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
+    # diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
+    diag_sudoku_grid = '......8.68.........7..863.....8............8..8.5.9...1.8..............8.....8.4.'
     display(solve(diag_sudoku_grid))
 
     try:

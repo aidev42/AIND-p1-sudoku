@@ -1,0 +1,28 @@
+{
+    "tests": [
+        {
+            "description": "the solve method produces a valid solution.",
+            "traceback": "Traceback (most recent call last):\n  File \"/home/vmuser_urplxjzn/utils.py\", line 142, in func_wrapper\n    return func(self)\n  File \"run3.py\", line 109, in test_solve\n    advice = advice)\n  File \"/home/vmuser_urplxjzn/utils.py\", line 55, in assertTrue\n    super(AINDTestCase, self).assertTrue(x, msg)\nAssertionError: False is not true : The solution was not valid.\n",
+            "message": "The solution was not valid.",
+            "advice": "Try your code on the following example:\n......8.68.........7..863.....8............8..8.5.9...1.8..............8.....8.4.\n",
+            "result": "F",
+            "rubric_item_id": "5530"
+        },
+        {
+            "description": "the README has been modified.",
+            "traceback": "Traceback (most recent call last):\n  File \"run3.py\", line 128, in test_readme\n    advice = 'Please answer the questions provided in the README.')\n  File \"/home/vmuser_urplxjzn/utils.py\", line 50, in assertNotEqual\n    super(AINDTestCase, self).assertNotEqual(a, b, msg)\nAssertionError: 0 == 0 : \n",
+            "message": null,
+            "advice": "Please answer the questions provided in the README.",
+            "result": "F",
+            "rubric_item_id": null
+        },
+        {
+            "description": "the naked_twins method applies the 'naked twins' heuristic.",
+            "traceback": "",
+            "message": null,
+            "advice": null,
+            "result": ".",
+            "rubric_item_id": "5531"
+        }
+    ]
+}
